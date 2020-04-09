@@ -1,10 +1,18 @@
-
+# Python
+import re
+from urllib import parse,request 
+"""
+- "parse" nos ayudar a procesar una respuesta http
+- "request" nos permite visitar una pagina de internet
+"""
 # Discord
 import discord
 from discord.ext import commands
 
+
 # Utilities
 import datetime
+from decouple import config
 
 bot = commands.Bot(command_prefix='-', description='Estes un Bot de ayuda') # Agregamos un simbolo para iniciar un comando para nuestro bot desde el chat
 
@@ -42,6 +50,17 @@ async def info(contexto):
     embed.set_thumbnail(url="https://i0.pngocean.com/files/754/205/270/5bbc2d2d8be57.jpg")
     await contexto.send(embed=embed)  # Embed es un tipo de mensajes con un estilo diferente, se usa para mostrar mensajes que quieras que se resalten
 
+@bot.command()
+async def youtube(contexto, *, search):
+    """ Comando para hacer busquedas en youtube
+    Es importante dejar el * para que search pueda buscar por 2 palabras clave (Youtuber-tema)
+    """
+    query_string = parse.urlencode({'search_query': search})  # Convierte el texto del usuario a un busqueda de internet
+    html_content = request.urlopen('http://www.youtube.com/results?'+query_string)
+    search_results = re.findall('href=\"\\/watch\\?v=(.{11})',html_content.read().decode())
+    """ La expresion regular r'(href=\"\\/watch\\?v=(.{11})) buscara resultados parecidos a: href="/watch?v=71DZYl4Q4o8, pero solo nos devolvera la parte del id, esto lo hace con ayuda de los grupos usando paretensis '()'"""
+    await contexto.send('https://www.youtube.com/watch?v=' + search_results[0])
+
 @bot.event
 async def on_ready():
     """Evento cuando se conecte.
@@ -53,4 +72,4 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle)  # Agregamos un estado al momento de iniciar el bot.
     print('Mi bot esta ejecutandose')
 
-bot.run('Njk3NTc0NjU4NzI3MzQ2MjA2.Xo5YIw.HKGYyAdw04zTHFM3qhLgYvCv77g')  # Token creado desde discord developers
+bot.run(config('ACCESS_TOKEN'))  # Token creado desde discord developers
